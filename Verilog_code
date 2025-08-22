@@ -1,0 +1,29 @@
+module ram(data_out, data_in, addr, w_r, clk, rst);
+  // Parameters for configurability
+  parameter addr_size = 3 ,       // Number of address bits (3 → 2^3 = 8 locations)
+            word_size = 4 ,       // Width of each word (4-bit word)
+
+  // Input/Output ports
+  input [addr_size-1:0] addr;      // Address input (3-bit → selects 1 of 8 memory locations)
+  input w_r, rst, clk;             // w_r: write=1/read=0, rst: reset, clk: clock
+  input [word_size-1:0] data_in;   // Data input (to be written into RAM)
+  output reg [word_size-1:0] data_out; // Data output (read data from RAM)
+
+  // Declare RAM with 8 locations, each 4 bits wide
+  reg [word_size-1:0] ram [0:7];
+
+  // Always block triggered on positive clock edge
+  always @(posedge clk) begin
+    if (rst == 1) 
+      // Reset output (does not clear RAM contents, just clears data_out)
+      data_out <= 4'b0000;
+
+    else if (w_r == 1)
+      // Write operation: store input data at given address
+      ram[addr] <= data_in;
+
+    else if (w_r == 0)
+      // Read operation: fetch data from RAM at given address
+      data_out <= ram[addr];
+  end
+endmodule

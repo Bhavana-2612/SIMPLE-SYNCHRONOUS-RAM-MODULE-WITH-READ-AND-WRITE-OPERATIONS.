@@ -1,46 +1,60 @@
+// Testbench for RAM module
 module ram_test() ;
-  reg clk,rst,w_r;
-  reg[3:0]data_in;
-  reg[2:0]addr;
-  wire[3:0]data_out;
+
+  // Declare testbench signals
+  reg clk, rst, w_r;         // Clock, Reset, Write/Read control
+  reg [3:0] data_in;         // 4-bit input data
+  reg [2:0] addr;            // 3-bit address (8 locations)
+  wire [3:0] data_out;       // 4-bit output data from RAM
   
-  ram dut(data_out,data_in,addr,w_r,clk,rst);
+  // Instantiate the Design Under Test (DUT)
+  ram dut(data_out, data_in, addr, w_r, clk, rst);
   
+  // Clock generation: toggles every 10 time units → 20 ns period
   initial begin
-    clk=0;
-    forever #10 clk=~clk;
+    clk = 0;
+    forever #10 clk = ~clk;
   end
   
+  // Stimulus process
   initial begin 
-    $dumpfile("dump.vcd");
-    $dumpvars(0,dut);
-    $monitor("Time=%0t clk=%b rst =%b w_r=%b data_in=%b addr=%b data_out=%b",$time,clk,rst,w_r,data_in,addr,data_out);
+    // For waveform dump (for GTKWave or similar viewers)
+    $dumpfile("dump.vcd");       // Create dump file
+    $dumpvars(0, dut);           // Dump all DUT variables
+    // Display values at every change
+    $monitor("Time=%0t | clk=%b rst=%b w_r=%b data_in=%b addr=%b data_out=%b",
+              $time, clk, rst, w_r, data_in, addr, data_out);
     
-    #0 rst=1;
-    #30 rst=0;
+    // Apply Reset
+    #0  rst = 1;                 // Assert reset
+    #30 rst = 0;                 // Deassert reset after 30 time units
     
-    w_r=1;
+    // ---------------- WRITE PHASE ----------------
+    w_r = 1; // Enable write mode
     
-    addr=3'b000; data_in=4'b1111; #20;
-    addr=3'b001; data_in=4'b1101; #20;
-    addr=3'b010; data_in=4'b1001; #20;
-    addr=3'b011; data_in=4'b1110; #20;
-    addr=3'b100; data_in=4'b0101; #20;
-    addr=3'b101; data_in=4'b1010; #20;
-    addr=3'b110; data_in=4'b0000; #20;
-    addr=3'b111; data_in=4'b0011; #20;
+    addr = 3'b000; data_in = 4'b1111; #20; // Write 1111 at addr 0
+    addr = 3'b001; data_in = 4'b1101; #20; // Write 1101 at addr 1
+    addr = 3'b010; data_in = 4'b1001; #20; // Write 1001 at addr 2
+    addr = 3'b011; data_in = 4'b1110; #20; // Write 1110 at addr 3
+    addr = 3'b100; data_in = 4'b0101; #20; // Write 0101 at addr 4
+    addr = 3'b101; data_in = 4'b1010; #20; // Write 1010 at addr 5
+    addr = 3'b110; data_in = 4'b0000; #20; // Write 0000 at addr 6
+    addr = 3'b111; data_in = 4'b0011; #20; // Write 0011 at addr 7
     
-    w_r=0;
+    // ---------------- READ PHASE ----------------
+    w_r = 0; // Enable read mode
     
-    addr=3'b000; #20;
-    addr=3'b001; #20;
-    addr=3'b010; #20;
-    addr=3'b011; #20;
-    addr=3'b100; #20;
-    addr=3'b101; #20;
-    addr=3'b110; #20;
-    addr=3'b111; #20;
+    addr = 3'b000; #20;  // Read from addr 0 → expect 1111
+    addr = 3'b001; #20;  // Read from addr 1 → expect 1101
+    addr = 3'b010; #20;  // Read from addr 2 → expect 1001
+    addr = 3'b011; #20;  // Read from addr 3 → expect 1110
+    addr = 3'b100; #20;  // Read from addr 4 → expect 0101
+    addr = 3'b101; #20;  // Read from addr 5 → expect 1010
+    addr = 3'b110; #20;  // Read from addr 6 → expect 0000
+    addr = 3'b111; #20;  // Read from addr 7 → expect 0011
+    
+    // End of simulation
     $finish();
-    
   end 
-endmodule 
+endmodule
+
